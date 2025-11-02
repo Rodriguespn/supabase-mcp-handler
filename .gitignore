@@ -1,0 +1,9 @@
+.git/
+node_modules/
+dist/
+*.log
+.DS_Store
+*.tsbuildinfo
+deno.lock
+.env
+.env.local
