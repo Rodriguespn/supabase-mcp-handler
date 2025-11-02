@@ -20,7 +20,7 @@ deno add @rodriguespn/supabase-mcp-handler
 Or import directly:
 
 ```ts
-import { createEdgeMCPServer } from "jsr:@rodriguespn/supabase-mcp-handler@0.0.1";
+import { createEdgeMCPServer } from "jsr:@rodriguespn/supabase-mcp-handler@0.0.2";
 ```
 
 ## Usage
