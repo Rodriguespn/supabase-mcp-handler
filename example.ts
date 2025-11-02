@@ -5,6 +5,7 @@ import { zodToJsonSchema } from "npm:zod-to-json-schema@^3.23.0";
 // Create the MCP server
 const { server, serve } = createEdgeMCPServer({
   name: "example-mcp-server",
+  basePath: "/my-edge-func",
   version: "1.0.0",
   corsOrigins: "*",
   enableLogging: true,
