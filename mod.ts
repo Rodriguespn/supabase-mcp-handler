@@ -103,6 +103,19 @@ export function createEdgeMCPServer(config: EdgeMCPConfig): EdgeMCPServerResult 
   // Health check endpoint
   app.get("/health", (c) => c.json({ status: "ok" }));
 
+  // Root endpoint with basic server info
+  app.get("/", (c) =>
+    c.json({
+      name: config.name,
+      version: config.version || "1.0.0",
+      status: "ok",
+      endpoints: {
+        health: "./health",
+        mcp: "./mcp",
+      },
+    }),
+  );
+
   // Create StreamableHttpTransport and bind the server
   const transport = new StreamableHttpTransport();
   const mcpHandler = transport.bind(server);
