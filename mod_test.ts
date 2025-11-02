@@ -121,3 +121,32 @@ Deno.test("should return serve function that can be used with Deno.serve", async
 
   assertEquals(res.status, 200);
 });
+
+Deno.test("should mount under basePath when provided", async () => {
+  const { serve, server } = createEdgeMCPServer({
+    name: "test-server",
+    basePath: "/my-func",
+  });
+
+  // add a simple tool so /mcp works too
+  server.tool("ping", {
+    description: "Ping tool",
+    handler: () => ({ content: [{ type: "text", text: "pong" }] }),
+  });
+
+  const handler = serve();
+
+  // Health should be available under the base path
+  const resHealth = await handler(new Request("http://localhost/my-func/health"));
+  assertEquals(resHealth.status, 200);
+
+  // MCP should be available under the base path
+  const resMcp = await handler(
+    new Request("http://localhost/my-func/mcp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} }),
+    }),
+  );
+  assertEquals(resMcp.status, 200);
+});

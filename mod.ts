@@ -16,6 +16,8 @@ export interface EdgeMCPConfig {
   enableLogging?: boolean;
   /** Schema adapter for validating inputs (e.g., Zod, Valibot) */
   schemaAdapter?: (schema: unknown) => unknown;
+  /** Optional base path to mount the server under (e.g. "/my-function") */
+  basePath?: string;
 }
 
 /**
@@ -63,7 +65,7 @@ export function createEdgeMCPServer(config: EdgeMCPConfig): EdgeMCPServerResult 
     schemaAdapter: config.schemaAdapter,
   });
 
-  // Create Hono app
+  // Create inner Hono app that implements the endpoints
   const app = new Hono();
 
   // Add CORS middleware
@@ -112,10 +114,27 @@ export function createEdgeMCPServer(config: EdgeMCPConfig): EdgeMCPServerResult 
     return response;
   });
 
-  // Return both server instance and serve function
+  // If a basePath is provided, mount the inner app under that path on a root app
+  if (config.basePath && config.basePath.trim() !== "") {
+    // Normalize base path to ensure it starts with a single leading slash and no trailing slash
+    let base = config.basePath.trim();
+    if (!base.startsWith("/")) base = `/${base}`;
+    if (base !== "/" && base.endsWith("/")) base = base.slice(0, -1);
+
+    const root = new Hono();
+    root.route(base, app);
+
+    return {
+      server,
+      app, // inner app (customize routes/middleware here)
+      serve: () => root.fetch, // serve the mounted app
+    };
+  }
+
+  // Default: serve the inner app at root
   return {
-    server, // Direct mcp-lite access
-    app, // Hono instance if needed
-    serve: () => app.fetch, // Ready-to-use handler
+    server,
+    app,
+    serve: () => app.fetch,
   };
 }
